@@ -10,7 +10,7 @@ Límite: <strong>{{ number_format($quota / 1024, 2) }} KB</strong></p>
   <div class="mb-3">
     <input type="file" name="file" class="form-control" required>
   </div>
-  <button class="btn btn-primary">Subir archivo</button>
+  <button type="submit" class="btn btn-primary">Subir archivo</button>
 
   <div id="progressContainer" class="mt-3"></div>
 </form>
@@ -26,7 +26,7 @@ Límite: <strong>{{ number_format($quota / 1024, 2) }} KB</strong></p>
         <td>{{ $f->name }}</td>
         <td>{{ number_format($f->size / 1024, 2) }}</td>
         <td>
-          <form method="POST" action="{{ route('files.destroy', $f) }}">@csrf @method('DELETE')
+          <form method="POST" action="{{ route('files.destroy', $f) }}" onsubmit="return confirmDelete('{{ $f->name }}')">@csrf @method('DELETE')
             <button class="btn btn-sm btn-danger">Eliminar</button>
           </form>
         </td>

@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SafeStorage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -18,7 +19,7 @@
                     @auth
                         <li class="nav-item"><a class="nav-link" href="/dashboard">Inicio</a></li>
                         @if(auth()->user()->role === 'admin')
-                            <li class="nav-item"><a class="nav-link" href="/admin/users">Administrar</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/admin/dashboard">Administrar</a></li>
                         @endif
                         <li class="nav-item">
                             <form action="{{ route('logout') }}" method="POST">@csrf
@@ -42,8 +43,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/upload.js"></script>
     <script src="/js/admin.js"></script>
+    <script src="/js/file-manager.js"></script>
 
 </body>
 

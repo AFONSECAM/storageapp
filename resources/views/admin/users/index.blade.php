@@ -86,9 +86,8 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-6 mb-3">
-              <label>Cuota personalizada (bytes)</label>
-              <input name="quota_limit" type="number" class="form-control">
+            <div class="col-md-6">              
+              <x-quota-input name="quota_limit" label="Cuota personalizada (MB)" />
             </div>
           </div>
         </div>
@@ -100,5 +99,4 @@
     </div>
   </div>
 </div>
-
 @endsection
