@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\File;
 use App\Models\Setting;
+use App\Services\FileValidationService;
+use App\Services\FileStorageService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use ZipArchive;
 
 class FileController extends Controller
 {
@@ -19,62 +19,44 @@ class FileController extends Controller
         return view('user.dashboard', compact('files', 'used', 'quota'));        
     }
 
-    public function store(Request $request){
+    public function store(Request $request, FileValidationService $validator, FileStorageService $storage)
+    {
         $request->validate(['file' => 'required|file']);
+        
         $user = auth()->user();
         $file = $request->file('file');
-        $size = $file->getSize();
-        $ext = strtolower($file->getClientOriginalExtension());
-
-        $globalQuota = (int) Setting::get('global_quota', 10485760);
-        $banned = array_map('trim', explode(',', Setting::get('banned_extensions','exe,bat,js,php,sh')));
-
-        $quota = $user->quota_limit ?? ($user->group->quota_limit ?? $globalQuota);
-        $used = (int) $user->files()->sum('size');
-
-        if (in_array($ext, $banned)) {
-            return response()->json(['error' => "Tipo de archivo .{$ext} no permitido"], 422);
+        
+        // Validar archivo
+        if ($error = $validator->validateFile($file, $user)) {
+            return response()->json(['error' => $error], 422);
         }
-
-
-        if (($used + $size) > $quota) {
-            return response()->json(['error' => "Cuota excedida ({$quota} bytes)"], 422);
-        }
-
-        if ($ext === 'zip') {
-            $zip = new ZipArchive;
-            if ($zip->open($file->getRealPath()) === TRUE) {
-                for ($i=0; $i < $zip->numFiles; $i++) {
-                    $inner = $zip->getNameIndex($i);
-                    $innerExt = strtolower(pathinfo($inner, PATHINFO_EXTENSION));
-                    if (in_array($innerExt, $banned)) {
-                        $zip->close();
-                        return response()->json(['error' => "Archivo '{$inner}' dentro del .zip no permitido"], 422);
-                    }
-                }
-                $zip->close();
-            }
-        }
-
-        // Guardar
-        $path = $file->store("uploads/{$user->id}", 'public');
-        $record = File::create([
-            'user_id' => $user->id,
-            'name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'size' => $size
-        ]);
-
+        
+        // Almacenar archivo
+        $storage->store($file, $user);
+        
         return response()->json(['message' => 'Archivo subido correctamente']);
     }
 
-    public function destroy(File $file)
+    public function destroy(File $file, FileStorageService $storage)
     {
-        $this->authorize('delete', $file);
-        if (Storage::disk('public')->exists($file->path)) {
-            Storage::disk('public')->delete($file->path);
+        $user = auth()->user();
+        
+        // Verificar permisos
+        if ($user->id !== $file->user_id && $user->role !== 'admin') {
+            abort(403, 'No tienes permisos para eliminar este archivo');
         }
-        $file->delete();
-        return back();
+        
+        // Eliminar archivo
+        $storage->delete($file);
+        
+        return response()->json(['message' => 'Archivo eliminado correctamente']);
+    }
+
+    public function getConfig()
+    {
+        $banned = Setting::get('banned_extensions', 'exe,bat,js,php,sh');
+        return response()->json([
+            'banned_extensions' => array_map('trim', explode(',', $banned))
+        ]);
     }
 }
