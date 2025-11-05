@@ -16,8 +16,8 @@ use App\Http\Controllers\Admin\SettingController;
 |
 */
 
-// 🔐 Middleware de autenticación con sesión o token (usa sanctum si lo activas)
-Route::middleware('auth')->group(function () {
+// 🔐 Middleware de autenticación con sesión
+Route::middleware(['auth:web'])->group(function () {
 
     // --- 📂 API de archivos del usuario ---
     Route::get('/files', [FileController::class, 'index']);           // Listar archivos del usuario

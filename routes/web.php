@@ -5,6 +5,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,15 +29,19 @@ Route::middleware(['auth'])->group(function () {
     // Subida y eliminación de archivos (AJAX / JS)
     Route::post('/files', [FileController::class, 'store'])->name('files.store');
     Route::delete('/files/{file}', [FileController::class, 'destroy'])->name('files.destroy');
+    Route::get('/config', [FileController::class, 'getConfig'])->name('files.config');
 
     // --- PANEL DE ADMINISTRACIÓN ---
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
 
-        // Gestión de usuarios
-        Route::resource('users', AdminUserController::class);
+        // Dashboard de admin
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Gestión de grupos
-        Route::resource('groups', GroupController::class);
+        // Gestión de usuarios (solo index para mostrar la vista)
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+
+        // Gestión de grupos (solo index para mostrar la vista)
+        Route::get('groups', [GroupController::class, 'index'])->name('groups.index');
 
         // Configuración global
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

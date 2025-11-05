@@ -20,7 +20,8 @@ class AuthController extends Controller
         $request->validate(['email' =>'required|email', 'password' => 'required']);
         if(auth()->attempt($request->only('email', 'password'))){
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            $redirectTo = auth()->user()->role === 'admin' ? '/admin/dashboard' : '/dashboard';
+            return redirect()->intended($redirectTo);
         }
         return back()->withErrors(['email' => 'Credenciales inválidas']);
     }

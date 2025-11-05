@@ -31,6 +31,10 @@ class SettingController extends Controller
             ['value' => strtolower(trim($request->banned_extensions))]
         );
 
-        return back()->with('success', 'Configuración actualizada correctamente.');
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Configuración actualizada correctamente']);
+        }
+        
+        return redirect()->back()->with('success', 'Configuración actualizada correctamente');
     }
 }

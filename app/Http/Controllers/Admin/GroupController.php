@@ -13,27 +13,23 @@ class GroupController extends Controller
         return view('admin.groups.index', compact('groups'));
     }
     
-    public function create() { 
-        return view('admin.groups.create'); 
-    }
+
     
     public function store(Request $request) { 
         $request->validate(['name'=>'required']); 
-        Group::create($request->only('name','quota_limit')); 
-        return redirect()->route('admin.groups.index'); 
+        $group = Group::create($request->only('name','quota_limit')); 
+        return response()->json(['message' => 'Grupo creado correctamente', 'group' => $group->fresh()]);
     }
 
-    public function edit(Group $group) {
-        return view('admin.groups.edit', compact('group')); 
-    }
+
 
     public function update(Request $request, Group $group) { 
         $group->update($request->only('name','quota_limit')); 
-        return redirect()->route('admin.groups.index'); 
+        return response()->json(['message' => 'Grupo actualizado correctamente', 'group' => $group->fresh()]);
     }
 
     public function destroy(Group $group){
         $group->delete(); 
-        return back();
+        return response()->json(['message' => 'Grupo eliminado correctamente']);
     }
 }
