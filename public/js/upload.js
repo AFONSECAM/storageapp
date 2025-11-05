@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.warn('No se pudo cargar configuración, usando valores por defecto');
   }
 
-  // 🎨 Estilos básicos para la barra de progreso
+  // Estilos básicos para la barra de progreso
   progressBarContainer.classList.add('progress', 'my-3');
   progressBar.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
   progressBar.style.width = '0%';
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-    // 🎯 Evento de progreso
+    // Evento de progreso
     xhr.upload.addEventListener('progress', (e) => {
       if (e.lengthComputable) {
         const percent = Math.round((e.loaded / e.total) * 100);
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // 🎯 Cuando la carga termina
+    // Cuando la carga termina
     xhr.onload = () => {
       if (submitBtn) submitBtn.disabled = false;
 
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    // 🎯 Manejo de errores de red
+    // Manejo de errores de red
     xhr.onerror = () => {
       progressBar.classList.add('bg-danger');
       statusText.className = 'text-danger';
