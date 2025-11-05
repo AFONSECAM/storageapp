@@ -26,7 +26,7 @@ Límite: <strong>{{ number_format($quota / 1024, 2) }} KB</strong></p>
         <td>{{ $f->name }}</td>
         <td>{{ number_format($f->size / 1024, 2) }}</td>
         <td>
-          <form method="POST" action="{{ route('files.destroy', $f) }}" onsubmit="return confirmDelete('{{ $f->name }}')">@csrf @method('DELETE')
+          <form method="POST" action="{{ route('files.destroy', $f) }}" onsubmit="return confirmDelete('{{ $f->name }}', event)">@csrf @method('DELETE')
             <button class="btn btn-sm btn-danger">Eliminar</button>
           </form>
         </td>
