@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Group;
 use App\Models\User;
-use Hash;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     public function index(){
         $users = User::with('group')->paginate(10);
-        return view('admin.users.index', compact('users'));
+        $groups = Group::all();
+        return view('admin.users.index', compact('users', 'groups'));
     }
 
     public function create(){
