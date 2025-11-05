@@ -1,9 +1,4 @@
-/**
- * SafeStorage - upload.js
- * Manejador de subida de archivos con barra de progreso y validaciones visuales
- */
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const form = document.getElementById('uploadForm');
   if (!form) return;
 
@@ -11,6 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBarContainer = document.createElement('div');
   const progressBar = document.createElement('div');
   const statusText = document.createElement('p');
+  
+  // Obtener configuración del backend
+  let bannedExtensions = ['exe', 'bat', 'js', 'php', 'sh']; // fallback
+  try {
+    const configRes = await fetch('/config');
+    const config = await configRes.json();
+    bannedExtensions = config.banned_extensions;
+  } catch (err) {
+    console.warn('No se pudo cargar configuración, usando valores por defecto');
+  }
 
   // 🎨 Estilos básicos para la barra de progreso
   progressBarContainer.classList.add('progress', 'my-3');
@@ -25,13 +30,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const file = fileInput.files[0];
     if (!file) {
-      alert('Selecciona un archivo primero');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Archivo requerido',
+        text: 'Selecciona un archivo primero'
+      });
+      return;
+    }
+
+    // Validar extensión antes de subir
+    const fileName = file.name.toLowerCase();
+    const ext = fileName.split('.').pop();
+    
+    if (bannedExtensions.includes(ext)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Tipo de archivo no permitido',
+        text: `El tipo de archivo '.${ext}' no está permitido`
+      });
+      statusText.className = 'text-danger';
+      statusText.innerText = `Tipo de archivo .${ext} no permitido`;
       return;
     }
 
     // Deshabilitar el botón durante la subida
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
+    const submitBtn = form.querySelector('button');
+    if (submitBtn) submitBtn.disabled = true;
 
     const formData = new FormData(form);
     const xhr = new XMLHttpRequest();
@@ -51,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 🎯 Cuando la carga termina
     xhr.onload = () => {
-      submitBtn.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
 
       if (xhr.status === 200) {
         const data = JSON.parse(xhr.responseText);
@@ -65,11 +89,23 @@ document.addEventListener('DOMContentLoaded', () => {
         let msg = 'Error al subir el archivo';
         try {
           const data = JSON.parse(xhr.responseText);
-          msg = data.error || msg;
-        } catch (err) {}
+          msg = data.error || data.message || msg;
+          console.log('Error response:', data);
+        } catch (err) {
+          console.error('Error parsing response:', err, xhr.responseText);
+        }
         progressBar.classList.add('bg-danger');
+        progressBar.style.width = '100%';
+        progressBar.innerText = 'Error';
         statusText.className = 'text-danger';
         statusText.innerText = msg;
+        
+        // Mostrar alerta con SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al subir archivo',
+          text: msg
+        });
       }
     };
 
@@ -78,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       progressBar.classList.add('bg-danger');
       statusText.className = 'text-danger';
       statusText.innerText = 'Error de conexión con el servidor';
-      submitBtn.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
     };
 
     // Enviar el archivo
